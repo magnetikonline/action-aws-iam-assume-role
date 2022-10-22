@@ -1,0 +1,41 @@
+name: AWS IAM assume role
+author: Peter Mescalchin
+description: Assume an AWS IAM role - either via an IAM user or OpenID Connect (OIDC).
+
+inputs:
+  user-access-key-id:
+    description: IAM user Access Key ID.
+    default:
+  user-secret-access-key:
+    description: IAM user Secret Access Key.
+    default:
+  web-identity-role-arn:
+    description: Authenticate via GitHub Actions OpenID Connect target IAM role ARN.
+    default:
+  assume-role-arn:
+    description: Target IAM role ARN to assume.
+    default:
+  assume-role-duration-seconds:
+    description: Assumed IAM role session duration.
+    default: 3600
+  assume-role-session-name:
+    description: Assumed IAM role session name.
+    default: GitHubActions
+  aws-region:
+    description: Desired AWS region (e.g. `ap-southeast-2`). Sets AWS_DEFAULT_REGION environment variable.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Execute
+      run: |
+        INPUT_USER_ACCESS_KEY_ID="${{ inputs.user-access-key-id }}" \
+        INPUT_USER_SECRET_ACCESS_KEY="${{ inputs.user-secret-access-key }}" \
+        INPUT_WEB_IDENTITY_ROLE_ARN="${{ inputs.web-identity-role-arn }}" \
+        INPUT_ASSUME_ROLE_ARN="${{ inputs.assume-role-arn }}" \
+        INPUT_ASSUME_ROLE_DURATION_SECONDS="${{ inputs.assume-role-duration-seconds }}" \
+        INPUT_ASSUME_ROLE_SESSION_NAME="${{ inputs.assume-role-session-name }}" \
+        INPUT_AWS_REGION="${{ inputs.aws-region }}" \
+          "${{ github.action_path }}/main.py"
+      shell: bash
