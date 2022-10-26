@@ -1,4 +1,4 @@
-# GitHub Action AWS assume role
+# Action AWS IAM assume role
 
 Action that allows for the `sts:AssumeRole` of an IAM role via the following methods:
 
