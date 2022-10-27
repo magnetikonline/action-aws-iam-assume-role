@@ -22,7 +22,7 @@ inputs:
     description: Assumed IAM role session name.
     default: GitHubActions
   aws-region:
-    description: Desired AWS region (e.g. `ap-southeast-2`). Sets AWS_DEFAULT_REGION environment variable.
+    description: Desired AWS region (e.g. `ap-southeast-2`). Sets the AWS_REGION environment variable.
     required: true
 
 runs:
