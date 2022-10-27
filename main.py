@@ -126,6 +126,8 @@ def aws_sts_assume_role(
         role_session_name,
         "--duration-seconds",
         role_duration,
+        "--output",
+        "json",
     ]
 
     if web_identity_token != "":
