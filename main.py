@@ -168,9 +168,7 @@ def aws_sts_assume_role(
     secret_access_key = credential_part("SecretAccessKey")
     session_token = credential_part("SessionToken")
     if (access_key_id == "") or (secret_access_key == "") or (session_token == ""):
-        exit_error(
-            "unable to assume role, missing credentials from assume role response"
-        )
+        exit_error("unable to assume role, missing expected response credentials")
 
     return (access_key_id, secret_access_key, session_token)
 
