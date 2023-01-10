@@ -116,7 +116,7 @@ jobs:
   main:
     name: OpenID Connect (OIDC) IAM role
     runs-on: ubuntu-latest
-    # note: permissions required to both fetch GitHub OpenID Connect token and actions/checkout
+    # note: permissions required to fetch OpenID Connect token and allow actions/checkout
     permissions:
       contents: read
       id-token: write
@@ -168,7 +168,7 @@ jobs:
   main:
     name: OpenID Connect (OIDC) IAM role -> Another IAM role
     runs-on: ubuntu-latest
-    # note: permissions required to both fetch GitHub OpenID Connect token and actions/checkout
+    # note: permissions required to fetch OpenID Connect token and allow actions/checkout
     permissions:
       contents: read
       id-token: write
