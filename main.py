@@ -4,8 +4,12 @@ import json
 import os
 import subprocess
 import sys
+import time
 import urllib.error
 import urllib.request
+
+ASSUME_ROLE_RETRY_COUNT = 5
+ASSUME_ROLE_RETRY_BACKOFF_MILLISECONDS = 500
 
 
 def exit_error(message: str):
@@ -113,6 +117,7 @@ def aws_sts_assume_role(
     role_duration: str,
     web_identity_token: str = "",
     env_var_collection: dict[str, str] = {},
+    retry_error_match_list: list[str] = [],
 ) -> tuple[str, str, str]:
     # build command argument list and environment variables to pass
     arg_list = [
@@ -137,24 +142,48 @@ def aws_sts_assume_role(
     env_var_collection["AWS_EC2_METADATA_DISABLED"] = "true"
     env_var_collection["PATH"] = os.environ.get("PATH", "")
 
-    # execute AWS CLI command
-    try:
-        result = subprocess.run(
-            arg_list,
-            encoding="utf-8",
-            env=env_var_collection,
-            stderr=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-        )
-    except FileNotFoundError as ex:
-        exit_error("unable to assume role, AWS CLI installed?")
+    retry_remain = ASSUME_ROLE_RETRY_COUNT
+    retry_backoff_milliseconds = 0
+    result_stdout = ""
+    while True:
+        # execute AWS CLI command
+        retry_remain -= 1
+        try:
+            result = subprocess.run(
+                arg_list,
+                encoding="utf-8",
+                env=env_var_collection,
+                stderr=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+            )
+        except FileNotFoundError as ex:
+            exit_error("unable to assume role, AWS CLI installed?")
 
-    if result.returncode != 0:
-        exit_error("unable to assume role: \n" + result.stderr.strip())
+        if result.returncode == 0:
+            # hold result of successful execution, exit retry loop
+            result_stdout = result.stdout
+            break
+
+        # command execution resulted in error
+        result_stderr = result.stderr.strip()
+        if (retry_remain > 0) and retry_error_match_list:
+            # if returned error text contains item in error match list - retry
+            allow_retry = False
+            for item in retry_error_match_list:
+                if item in result_stderr:
+                    allow_retry = True
+
+            if allow_retry:
+                # backoff a little, then move onto another retry attempt
+                retry_backoff_milliseconds += ASSUME_ROLE_RETRY_BACKOFF_MILLISECONDS
+                time.sleep(retry_backoff_milliseconds / 1000)
+                continue
+
+        exit_error("unable to assume role: \n" + result_stderr)
 
     # parse JSON response from AWS CLI assume role call
     try:
-        assume_data = json.loads(result.stdout)
+        assume_data = json.loads(result_stdout)
     except json.decoder.JSONDecodeError:
         exit_error("unable to assume role - malformed AWS CLI response")
 
@@ -246,6 +275,9 @@ def main():
             role_session_name=assume_role_session_name,
             role_duration=assume_role_duration,
             web_identity_token=wi_token,
+            retry_error_match_list=[
+                "Couldn't retrieve verification key from your identity provider",
+            ],
         )
 
         if assume_role_arn != "":
