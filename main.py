@@ -133,8 +133,8 @@ def aws_sts_assume_role(
     if web_identity_token != "":
         arg_list += ["--web-identity-token", web_identity_token]
 
-    # set `AWS_EC2_METADATA_DISABLED` to avoid AWS CLI reaching out to metadata endpoint
-    # on GitHub-hosted runners, which causes runtime error
+    # setting `AWS_EC2_METADATA_DISABLED` stops the AWS CLI from reaching out
+    # to (a non-existent) metadata endpoint on GitHub hosted runners
     env_var_collection["AWS_EC2_METADATA_DISABLED"] = "true"
     env_var_collection["PATH"] = os.environ.get("PATH", "")
 
@@ -237,8 +237,7 @@ def main():
         )
 
     else:
-        # using OpenID Connect (OIDC) to assume via web identity a target IAM role ARN
-        # and then optionally assume *another* IAM role if `assume_role_arn` non-empty
+        # assume IAM role ARN via OpenID Connect (OIDC)
         print("Assuming IAM role via OIDC")
 
         wi_token = fetch_oidc_jwt()
@@ -251,7 +250,7 @@ def main():
         )
 
         if assume_role_arn != "":
-            # from the OIDC IAM role, assume another final IAM role
+            # from the OIDC IAM role, assume *another* final IAM role
             (access_key_id, secret_access_key, session_token) = aws_sts_assume_role(
                 "assume-role",
                 role_arn=assume_role_arn,
