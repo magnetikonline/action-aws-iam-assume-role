@@ -161,10 +161,7 @@ def aws_sts_assume_role(
 
     # pull out generated session credentials
     def credential_part(key: str) -> str:
-        if "Credentials" not in assume_data:
-            return ""
-
-        return assume_data["Credentials"].get(key, "")
+        return assume_data.get("Credentials", {}).get(key, "")
 
     access_key_id = credential_part("AccessKeyId")
     secret_access_key = credential_part("SecretAccessKey")
