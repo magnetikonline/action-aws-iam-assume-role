@@ -20,7 +20,7 @@ inputs:
     default: 3600
   assume-role-session-name:
     description: Assumed IAM role session name.
-    default: GitHubActions
+    default: github-actions
   aws-region:
     description: Desired AWS region (e.g. `ap-southeast-2`). Sets the AWS_REGION environment variable.
     required: true
