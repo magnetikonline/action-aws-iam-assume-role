@@ -90,7 +90,8 @@ def fetch_oidc_jwt() -> str:
 
     # build HTTP request and execute
     request = urllib.request.Request(
-        headers={"Authorization": "bearer " + req_token}, url=req_url
+        headers={"Authorization": "bearer " + req_token},
+        url=req_url,
     )
 
     try:
